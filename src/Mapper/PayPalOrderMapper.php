@@ -75,8 +75,14 @@ final class PayPalOrderMapper
         };
     }
 
-    private function mapItem(LineItem $item, string $currency): array
+    private function mapItem(LineItem $item, string $currency, array $providerOptions = []): array
     {
+        $category = $providerOptions['item_category'] ?? PayPalItemCategory::DIGITAL_GOODS;
+
+        if (is_string($category)) {
+            $category = PayPalItemCategory::from($category);
+        }
+
         return [
             'name' => mb_substr($item->name, 0, 127),
             'description' => $item->description,
@@ -90,7 +96,7 @@ final class PayPalOrderMapper
                 'currency_code' => $currency,
                 'value' => $item->taxAmount?->decimal() ?? '0.00',
             ],
-            'category' => 'DIGITAL_GOODS',
+            'category' => $category->value,
         ];
     }
 }
