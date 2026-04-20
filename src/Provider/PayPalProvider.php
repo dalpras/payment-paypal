@@ -65,15 +65,16 @@ final class PayPalProvider implements PaymentProviderInterface
 
     public function completeCheckout(CompletionRequest $request): CompletionResult
     {
-        $orderId = $request->queryParams['token']
-            ?? $request->bodyParams['token']
-            ?? $request->expectedProviderPaymentId;
+        $orderId = $request->expectedProviderPaymentId
+            ?? $request->queryParams['token']
+            ?? $request->bodyParams['token'];
 
         if (!is_string($orderId) || $orderId === '') {
-            throw new PayPalConfigurationException('Missing PayPal order id/token for checkout completion.');
+            throw new PayPalConfigurationException('Missing PayPal order id for checkout completion.');
         }
 
-        $intent = $this->resolveIntent($request->bodyParams['intent'] ?? $request->queryParams['intent'] ?? null);
+        $intent = $request->expectedIntent
+            ?? throw new PayPalConfigurationException('Missing persisted payment intent for checkout completion.');
 
         $response = $intent === PaymentIntent::SALE
             ? $this->httpClient->captureOrder($orderId, $request->idempotencyKey)
@@ -178,8 +179,8 @@ final class PayPalProvider implements PaymentProviderInterface
             providerCode: $this->code(),
             eventType: (string) ($payload['event_type'] ?? 'unknown'),
             providerPaymentId: $payload['resource']['supplementary_data']['related_ids']['order_id']
-                ?? $payload['resource']['id']
-                ?? null,
+            ?? $payload['resource']['id']
+            ?? null,
             payload: is_array($payload) ? $payload : [],
             headers: $request->getHeaders(),
         );
