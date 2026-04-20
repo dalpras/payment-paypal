@@ -5,6 +5,7 @@ namespace DalPraS\Payment\PayPal\Mapper;
 use DalPraS\Payment\Dto\CheckoutRequest;
 use DalPraS\Payment\Dto\RefundRequest;
 use DalPraS\Payment\Enum\PaymentIntent;
+use DalPraS\Payment\PayPal\Enum\PayPalItemCategory;
 use DalPraS\Payment\ValueObject\LineItem;
 
 final class PayPalOrderMapper
@@ -40,7 +41,10 @@ final class PayPalOrderMapper
                         ],
                     ],
                 ],
-                'items' => array_map(fn(LineItem $item) => $this->mapItem($item, $currency), $request->items),
+                'items' => array_map(
+                    fn(LineItem $item) => $this->mapItem($item, $currency, $request->providerOptions),
+                    $request->items
+                ),
                 'custom_id' => $request->paymentReference,
             ]],
             'payment_source' => [
@@ -80,9 +84,8 @@ final class PayPalOrderMapper
         $category = $providerOptions['item_category'] ?? PayPalItemCategory::DIGITAL_GOODS;
 
         if (is_string($category)) {
-            $category = PayPalItemCategory::from($category);
+            $category = PayPalItemCategory::tryFrom($category) ?? PayPalItemCategory::DIGITAL_GOODS;
         }
-
         return [
             'name' => mb_substr($item->name, 0, 127),
             'description' => $item->description,
