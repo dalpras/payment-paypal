@@ -14,9 +14,9 @@ final class PayPalHttpClient implements PayPalHttpClientInterface
     private ?string $accessToken = null;
     private ?\DateTimeImmutable $accessTokenExpiresAt = null;
     public function __construct(
-        private readonly PayPalConfig $config, 
-        private readonly ClientInterface $httpClient, 
-        private readonly RequestFactoryInterface $requestFactory, 
+        private readonly PayPalConfig $config,
+        private readonly ClientInterface $httpClient,
+        private readonly RequestFactoryInterface $requestFactory,
         private readonly StreamFactoryInterface $streamFactory
     ) {
     }
@@ -28,12 +28,22 @@ final class PayPalHttpClient implements PayPalHttpClientInterface
 
     public function captureOrder(string $orderId, ?string $requestId = null): array
     {
-        return $this->requestJson('POST', sprintf('/v2/checkout/orders/%s/capture', rawurlencode($orderId)), [], $requestId);
+        return $this->requestJson(
+            'POST',
+            sprintf('/v2/checkout/orders/%s/capture', rawurlencode($orderId)),
+            null,
+            $requestId
+        );
     }
 
     public function authorizeOrder(string $orderId, ?string $requestId = null): array
     {
-        return $this->requestJson('POST', sprintf('/v2/checkout/orders/%s/authorize', rawurlencode($orderId)), [], $requestId);
+        return $this->requestJson(
+            'POST',
+            sprintf('/v2/checkout/orders/%s/authorize', rawurlencode($orderId)),
+            null,
+            $requestId
+        );
     }
 
     public function getOrder(string $orderId): array
@@ -51,28 +61,50 @@ final class PayPalHttpClient implements PayPalHttpClientInterface
         return $this->requestJson('POST', '/v1/notifications/verify-webhook-signature', $payload);
     }
 
-    private function requestJson(string $method, string $path, array $payload = [], ?string $requestId = null): array
-    {
-        $request = $this->requestFactory->createRequest($method, $this->config->baseUri() . $path)->withHeader('Accept', 'application/json')->withHeader('Authorization', 'Bearer ' . $this->accessToken())->withHeader('Content-Type', 'application/json');
+    private function requestJson(
+        string $method,
+        string $path,
+        array|object|null $payload = null,
+        ?string $requestId = null
+    ): array {
+        $request = $this->requestFactory
+            ->createRequest($method, $this->config->baseUri() . $path)
+            ->withHeader('Accept', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->accessToken())
+            ->withHeader('Content-Type', 'application/json');
+
         if ($this->config->partnerAttributionId !== null) {
-            $request = $request->withHeader('PayPal-Partner-Attribution-Id', $this->config->partnerAttributionId);
+            $request = $request->withHeader(
+                'PayPal-Partner-Attribution-Id',
+                $this->config->partnerAttributionId
+            );
         }
+
         if ($requestId !== null && $requestId !== '') {
             $request = $request->withHeader('PayPal-Request-Id', $requestId);
         }
-        if ($method !== 'GET') {
-            $request = $request->withBody($this->streamFactory->createStream((string) json_encode($payload, JSON_THROW_ON_ERROR)));
+
+        if ($method !== 'GET' && $payload !== null) {
+            $request = $request->withBody(
+                $this->streamFactory->createStream(
+                    json_encode($payload, JSON_THROW_ON_ERROR)
+                )
+            );
         }
+
         $response = $this->httpClient->sendRequest($request);
+
         $status = $response->getStatusCode();
         $body = (string) $response->getBody();
         $decoded = $body !== '' ? json_decode($body, true, 512, JSON_THROW_ON_ERROR) : [];
+
         if ($status < 200 || $status >= 300) {
             throw PayPalApiException::fromResponse($status, is_array($decoded) ? $decoded : []);
         }
+
         return is_array($decoded) ? $decoded : [];
     }
-    
+
     private function accessToken(): string
     {
         if ($this->accessToken !== null && $this->accessTokenExpiresAt !== null) {
