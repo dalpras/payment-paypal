@@ -73,6 +73,7 @@ final class PayPalProvider implements PaymentProviderInterface
             throw new PayPalConfigurationException('Missing PayPal order id for checkout completion.');
         }
 
+        // FIXME includere l'intent nella $request e propagarlo in su fino all'order
         $intent = $request->expectedIntent
             ?? throw new PayPalConfigurationException('Missing persisted payment intent for checkout completion.');
 
