@@ -77,12 +77,12 @@ final class PayPalProvider implements PaymentProviderInterface
         $intent = $request->expectedIntent
             ?? throw new PayPalConfigurationException('Missing persisted payment intent for checkout completion.');
 
-        $response = $intent === PaymentIntent::SALE
+        $response = $intent === PaymentIntent::Sale
             ? $this->httpClient->captureOrder($orderId, $request->idempotencyKey)
             : $this->httpClient->authorizeOrder($orderId, $request->idempotencyKey);
 
         return new CompletionResult(
-            status: $intent === PaymentIntent::SALE ? PaymentStatus::Captured : PaymentStatus::Authorized,
+            status: $intent === PaymentIntent::Sale ? PaymentStatus::Captured : PaymentStatus::Authorized,
             providerPaymentId: $orderId,
             transactionIds: $this->extractTransactionIds($response),
             message: $response['status'] ?? null,
@@ -221,9 +221,9 @@ final class PayPalProvider implements PaymentProviderInterface
     private function resolveIntent(mixed $value): PaymentIntent
     {
         return match ($value) {
-            'authorize' => PaymentIntent::AUTHORIZE,
-            'capture_later' => PaymentIntent::CAPTURE_LATER,
-            default => PaymentIntent::SALE,
+            'authorize' => PaymentIntent::Authorize,
+            'capture_later' => PaymentIntent::CaptureLater,
+            default => PaymentIntent::Sale,
         };
     }
 

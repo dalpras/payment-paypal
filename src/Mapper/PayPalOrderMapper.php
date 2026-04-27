@@ -55,7 +55,7 @@ final class PayPalOrderMapper
                         'locale' => $request->locale,
                         'brand_name' => $request->providerOptions['brand_name'] ?? null,
                         'shipping_preference' => $request->providerOptions['shipping_preference'] ?? 'NO_SHIPPING',
-                        'user_action' => ($request->intent === PaymentIntent::SALE ? 'PAY_NOW' : 'CONTINUE'),
+                        'user_action' => ($request->intent === PaymentIntent::Sale ? 'PAY_NOW' : 'CONTINUE'),
                     ], static fn($value) => $value !== null && $value !== ''),
                     'email_address' => $request->customer->email,
                 ],
@@ -74,8 +74,8 @@ final class PayPalOrderMapper
     private function mapIntent(PaymentIntent $intent): string
     {
         return match ($intent) {
-            PaymentIntent::SALE => 'CAPTURE',
-            PaymentIntent::AUTHORIZE, PaymentIntent::CAPTURE_LATER => 'AUTHORIZE',
+            PaymentIntent::Sale => 'CAPTURE',
+            PaymentIntent::Authorize, PaymentIntent::CaptureLater => 'AUTHORIZE',
         };
     }
 

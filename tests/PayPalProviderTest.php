@@ -52,14 +52,14 @@ final class PayPalProviderTest extends TestCase
     public function testMapperUsesAuthorizeForDeferredCaptureIntents(): void
     {
         $mapper = new PayPalOrderMapper();
-        $request = $this->checkoutRequest(PaymentIntent::CAPTURE_LATER);
+        $request = $this->checkoutRequest(PaymentIntent::CaptureLater);
         $payload = $mapper->mapCreateOrderPayload($request);
 
         self::assertSame('AUTHORIZE', $payload['intent']);
         self::assertSame('CONTINUE', $payload['payment_source']['paypal']['experience_context']['user_action']);
     }
 
-    private function checkoutRequest(PaymentIntent $intent = PaymentIntent::SALE): CheckoutRequest
+    private function checkoutRequest(PaymentIntent $intent = PaymentIntent::Sale): CheckoutRequest
     {
         $currency = Currency::EUR;
 
