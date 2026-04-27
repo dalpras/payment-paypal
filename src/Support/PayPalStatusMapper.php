@@ -9,23 +9,23 @@ final class PayPalStatusMapper
     public static function fromOrderStatus(?string $status): PaymentStatus
     {
         return match ($status) {
-            'CREATED', 'SAVED' => PaymentStatus::PENDING_CUSTOMER_ACTION,
-            'PAYER_ACTION_REQUIRED', 'APPROVED' => PaymentStatus::PENDING_CUSTOMER_ACTION,
-            'COMPLETED' => PaymentStatus::CAPTURED,
-            'VOIDED' => PaymentStatus::CANCELLED,
-            default => PaymentStatus::UNKNOWN,
+            'CREATED', 'SAVED' => PaymentStatus::PendingCustomerAction,
+            'PAYER_ACTION_REQUIRED', 'APPROVED' => PaymentStatus::PendingCustomerAction,
+            'COMPLETED' => PaymentStatus::Captured,
+            'VOIDED' => PaymentStatus::Cancelled,
+            default => PaymentStatus::Unknown,
         };
     }
 
     public static function fromWebhookEventType(?string $eventType): PaymentStatus
     {
         return match ($eventType) {
-            'CHECKOUT.ORDER.APPROVED' => PaymentStatus::PENDING_CUSTOMER_ACTION,
-            'PAYMENT.CAPTURE.COMPLETED' => PaymentStatus::CAPTURED,
-            'PAYMENT.CAPTURE.REFUNDED' => PaymentStatus::REFUNDED,
-            'PAYMENT.AUTHORIZATION.CREATED' => PaymentStatus::AUTHORIZED,
-            'PAYMENT.AUTHORIZATION.VOIDED' => PaymentStatus::CANCELLED,
-            default => PaymentStatus::UNKNOWN,
+            'CHECKOUT.ORDER.APPROVED' => PaymentStatus::PendingCustomerAction,
+            'PAYMENT.CAPTURE.COMPLETED' => PaymentStatus::Captured,
+            'PAYMENT.CAPTURE.REFUNDED' => PaymentStatus::Refunded,
+            'PAYMENT.AUTHORIZATION.CREATED' => PaymentStatus::Authorized,
+            'PAYMENT.AUTHORIZATION.VOIDED' => PaymentStatus::Cancelled,
+            default => PaymentStatus::Unknown,
         };
     }
 }

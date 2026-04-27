@@ -41,7 +41,7 @@ final class PayPalProviderTest extends TestCase
         self::assertTrue($response->redirectRequired);
         self::assertSame('https://www.sandbox.paypal.com/checkoutnow?token=ORDER-123', $response->redirectUrl);
         self::assertSame('ORDER-123', $response->providerPaymentId);
-        self::assertSame(PaymentStatus::PENDING_CUSTOMER_ACTION, $response->status);
+        self::assertSame(PaymentStatus::PendingCustomerAction, $response->status);
         self::assertSame('checkout-1', $client->lastCreateRequestId);
         self::assertSame('CAPTURE', $client->lastCreatePayload['intent']);
         self::assertSame('merchant-1', $client->lastCreatePayload['purchase_units'][0]['reference_id']);

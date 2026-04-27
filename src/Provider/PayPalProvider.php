@@ -82,7 +82,7 @@ final class PayPalProvider implements PaymentProviderInterface
             : $this->httpClient->authorizeOrder($orderId, $request->idempotencyKey);
 
         return new CompletionResult(
-            status: $intent === PaymentIntent::SALE ? PaymentStatus::CAPTURED : PaymentStatus::AUTHORIZED,
+            status: $intent === PaymentIntent::SALE ? PaymentStatus::Captured : PaymentStatus::Authorized,
             providerPaymentId: $orderId,
             transactionIds: $this->extractTransactionIds($response),
             message: $response['status'] ?? null,
@@ -99,7 +99,7 @@ final class PayPalProvider implements PaymentProviderInterface
         $response = $this->httpClient->authorizeOrder($request->providerPaymentId, $request->idempotencyKey);
 
         return new AuthorizationResult(
-            status: PaymentStatus::AUTHORIZED,
+            status: PaymentStatus::Authorized,
             providerPaymentId: $request->providerPaymentId,
             transactionIds: $this->extractTransactionIds($response),
             message: $response['status'] ?? null,
@@ -116,7 +116,7 @@ final class PayPalProvider implements PaymentProviderInterface
         $response = $this->httpClient->captureOrder($request->providerPaymentId, $request->idempotencyKey);
 
         return new CaptureResult(
-            status: PaymentStatus::CAPTURED,
+            status: PaymentStatus::Captured,
             providerPaymentId: $request->providerPaymentId,
             transactionIds: $this->extractTransactionIds($response),
             message: $response['status'] ?? null,
@@ -127,7 +127,7 @@ final class PayPalProvider implements PaymentProviderInterface
     public function cancel(CancelRequest $request): CancelResult
     {
         return new CancelResult(
-            status: PaymentStatus::UNKNOWN,
+            status: PaymentStatus::Unknown,
             providerPaymentId: $request->providerPaymentId,
             transactionIds: [],
             message: 'Generic PayPal order cancellation is not implemented in this skeleton provider.',
@@ -146,7 +146,7 @@ final class PayPalProvider implements PaymentProviderInterface
         $response = $this->httpClient->refundCapture($captureId, $payload, $request->idempotencyKey);
 
         return new RefundResult(
-            status: PaymentStatus::REFUNDED,
+            status: PaymentStatus::Refunded,
             providerPaymentId: $captureId,
             transactionIds: array_values(array_filter([$response['id'] ?? null], 'is_string')),
             message: $response['status'] ?? null,
