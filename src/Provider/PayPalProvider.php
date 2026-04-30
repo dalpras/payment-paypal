@@ -127,11 +127,15 @@ final class PayPalProvider implements PaymentProviderInterface
     public function cancel(CancelRequest $request): CancelResult
     {
         return new CancelResult(
-            status: PaymentStatus::Unknown,
+            status: PaymentStatus::Cancelled,
             providerPaymentId: $request->providerPaymentId,
             transactionIds: [],
-            message: 'Generic PayPal order cancellation is not implemented in this skeleton provider.',
-            raw: [],
+            message: 'PayPal checkout cancelled by payer before completion.',
+            raw: [
+                'local' => true,
+                'provider_cancellation' => false,
+                'metadata' => $request->metadata,
+            ],
         );
     }
 
